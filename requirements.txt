@@ -20,7 +20,6 @@ dbus-python==1.2.18
 decorator==4.4.2
 defusedxml==0.7.1
 distro==1.7.0
-distro-info==1.1+ubuntu0.2
 Django==5.1.2
 duplicity==0.8.21
 entrypoints==0.4
