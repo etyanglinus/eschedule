@@ -21,7 +21,6 @@ decorator==4.4.2
 defusedxml==0.7.1
 distro==1.7.0
 Django==5.1.2
-duplicity==0.8.21
 entrypoints==0.4
 fasteners==0.14.1
 fonttools==4.29.1
