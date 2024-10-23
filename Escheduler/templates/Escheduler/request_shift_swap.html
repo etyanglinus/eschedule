@@ -1,0 +1,118 @@
+{% extends 'Escheduler/base.html' %}
+
+{% block content %}
+<div class="shift-swap-container">
+  <h2 class="swap-heading">Request Shift Swap</h2>
+  <p class="shift-info">You are requesting a swap for the following shift:</p>
+  
+  <p class="shift-details">
+    <strong>Date:</strong> {{ shift.start_time|date:"F j, Y" }}<br>
+    <strong>Time:</strong> {{ shift.start_time|time:"g:i a" }} - {{ shift.end_time|time:"g:i a" }}<br>
+    <strong>Project:</strong> {{ shift.project.name }}<br>
+  </p>
+
+  <form method="post" class="swap-form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="{{ form.requested_shift.id_for_label }}">Select Shift to Swap With:</label>
+      {{ form.requested_shift }}
+      {{ form.requested_shift.errors }}
+    </div>
+
+    <div class="form-group">
+      <label for="reason">Reason for Swap:</label>
+      {{ form.reason }}
+      {{ form.reason.errors }}
+    </div>
+    
+    <button type="submit" class="btn-submit">Submit Swap Request</button>
+    <a href="{% url 'dashboard' %}" class="btn-cancel">Cancel</a>
+  </form>
+</div>
+
+<style>
+  .shift-swap-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .swap-heading {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .shift-info {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 15px;
+  }
+
+  .shift-details {
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .swap-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .btn-submit,
+  .btn-cancel {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn-submit {
+    background-color: #28a745;
+    color: white;
+    border: none;
+  }
+
+  .btn-cancel {
+    background-color: #dc3545;
+    color: white;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .btn-submit:hover,
+  .btn-cancel:hover {
+    opacity: 0.9;
+  }
+
+  .btn-cancel {
+    margin-left: 10px;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'Escheduler/base.html' %}
+
+{% block content %}
+  <h2>Schedule for {{ project.name }}</h2>
+  <ul>
+    {% for schedule in schedules %}
+      <li>{{ schedule.date }} - Shifts: 
+        {% for shift in schedule.shifts.all %}
+          {{ shift.employee.user.username }} ({{ shift.start_time }} to {{ shift.end_time }})
+        {% endfor %}
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'create_shift' project.id %}">Create Shift for this Project</a>
+{% endblock %}

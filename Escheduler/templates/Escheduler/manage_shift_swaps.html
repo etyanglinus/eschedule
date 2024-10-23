@@ -1,0 +1,83 @@
+{% extends 'Escheduler/base.html' %}
+{% block content %}
+<div class="dashboard-container">
+    <h1>Manage Shift Swap Requests</h1>
+    <ul class="swap-request-list">
+        {% for request in swap_requests %}
+        <li class="swap-request-item">
+            <h3>Swap Request by {{ request.employee.user.first_name }} {{request.employee.user.last_name}}</h3>
+
+            <h4>Original Shift</h4>
+            <p>
+                Date: {{ request.original_shift.start_time|date:"F j, Y" }}<br>
+                Time: {{ request.original_shift.start_time|time:"g:i a" }} - {{ request.original_shift.end_time|time:"g:i a" }}<br>
+                Project: {{ request.original_shift.project.name }}<br>
+            </p>
+
+            {% if request.requested_shift %}
+            <h4>Requested Shift</h4>
+            <p>
+                Date: {{ request.requested_shift.start_time|date:"F j, Y" }}<br>
+                Time: {{ request.requested_shift.start_time|time:"g:i a" }} - {{ request.requested_shift.end_time|time:"g:i a" }}<br>
+                Project: {{ request.requested_shift.project.name }}<br>
+            </p>
+            {% else %}
+            <p>No specific requested shift, employee is open to swaps.</p>
+            {% endif %}
+
+            <h4>Reason for Request</h4>
+            <p>{{ request.reason }}</p>
+
+            <form method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="request_id" value="{{ request.id }}">
+                <textarea name="response" placeholder="Manager's response (optional)"></textarea>
+                <button type="submit" name="action" value="approve" class="btn">Approve</button>
+                <button type="submit" name="action" value="deny" class="btn btn-danger">Deny</button>
+            </form>
+        </li>
+        {% empty %}
+        <li>No pending swap requests.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .swap-request-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .swap-request-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+
+    .swap-request-item h4 {
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+</style>
+
+{% endblock %}

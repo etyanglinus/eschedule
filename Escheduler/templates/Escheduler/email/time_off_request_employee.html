@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Time Off Request Submitted</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .email-header {
+            background-color: #0073e6;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        .email-body {
+            padding: 20px;
+        }
+        h2 {
+            color: #333333;
+            font-size: 24px;
+        }
+        p {
+            color: #555555;
+            font-size: 16px;
+        }
+        .email-footer {
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+            font-size: 14px;
+            color: #777777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="email-container">
+    <div class="email-header">
+        <h1>Your Time Off Request Submitted</h1>
+    </div>
+
+    <div class="email-body">
+        <h2>Hello {{ employee.user.first_name }},</h2>
+        <p>Your time off request has been submitted successfully.</p>
+        <p>Request Details:</p>
+        <ul>
+            <li><strong>Start Date:</strong> {{ time_off_request.start_date }}</li>
+            <li><strong>End Date:</strong> {{ time_off_request.end_date }}</li>
+            <li><strong>Reason:</strong> {{ time_off_request.reason }}</li>
+        </ul>
+        <p>Your request is currently under review by your manager. You will be notified once a decision has been made.</p>
+    </div>
+
+    <div class="email-footer">
+        <p>Thank you,</p>
+        <p>Your Team</p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+{% extends 'Escheduler/base.html' %}
+
+{% block content %}
+<div class="projects-container">
+  <h2 class="page-title">Departments/Projects</h2>
+  
+  {% if projects %}
+    <ul class="project-list">
+      {% for project in projects %}
+        <li class="project-item">
+          <a href="{% url 'project_detail' project.id %}" class="project-link">
+            <span class="project-name">{{ project.name }}</span>
+            <span class="project-arrow">&rarr;</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="no-projects">No projects available. Create a new project to get started!</p>
+  {% endif %}
+  
+  <a href="{% url 'create_project' %}" class="create-project-btn">Create New Project/Department</a>
+</div>
+
+<style>
+  .projects-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .project-list {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .project-item {
+    margin-bottom: 15px;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .project-item:hover {
+    transform: translateX(5px);
+  }
+
+  .project-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #495057;
+    font-size: 1.1rem;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .project-link:hover {
+    background-color: #e9ecef;
+  }
+
+  .project-name {
+    font-weight: 500;
+  }
+
+  .project-arrow {
+    font-size: 1.2rem;
+    color: #6c757d;
+  }
+
+  .no-projects {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    margin-bottom: 30px;
+  }
+
+  .create-project-btn {
+    display: block;
+    width: 200px;
+    margin: 30px auto 0;
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  .create-project-btn:hover {
+    background-color: #0056b3;
+  }
+
+  @media (max-width: 600px) {
+    .page-title {
+      font-size: 2rem;
+    }
+
+    .project-link {
+      font-size: 1rem;
+    }
+
+    .create-project-btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'Escheduler/base.html' %} {% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <h2 class="login-title">Login to Your Account</h2>
+
+    {% if messages %}
+    <ul class="error-list">
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="login">Username or Work Email</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="btn-submit">Login</button>
+    </form>
+
+    <p class="register-link">
+      Don't have an account? <a href="{% url 'register' %}">Register here</a>.
+    </p>
+  </div>
+</div>
+<style>
+  /* General form container styling */
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+    padding: 20px;
+  }
+
+  .login-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .login-title {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  /* Form field styling */
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  /* Button styling */
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn-submit:hover {
+    background-color: #0056b3;
+  }
+
+  /* Error message styling */
+  .error-list {
+    color: #d9534f;
+    font-size: 14px;
+    margin-bottom: 15px;
+    list-style: none;
+    padding: 0;
+  }
+
+  /* Register link styling */
+  .register-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+  }
+
+  .register-link a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .register-link a:hover {
+    color: #0056b3;
+  }
+
+  /* Responsive behavior */
+  @media (max-width: 500px) {
+    .login-card {
+      padding: 20px;
+    }
+
+    .login-title {
+      font-size: 20px;
+    }
+
+    .btn-submit {
+      font-size: 14px;
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'Escheduler/base.html' %}
+{% block content %}
+<div class="dashboard-container">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if is_manager %}
+    <h1 class="dashboard-title">Manager Dashboard</h1>
+    
+    <div class="search-container">
+        <input type="text" placeholder="Search..." class="search-input">
+    </div>
+
+    <section id="employeeAvailabilitySection" class="dashboard-section">
+        <h2>Employee Availability</h2>
+        <button class="close-btn" onclick="toggleSection('employeeAvailabilitySection')">Close</button>
+        <ul class="employee-list">
+            {% for employee in employees %}
+            <li class="employee-item">
+                <h3>{{ employee.user.username }}</h3>
+                <p>Availability: {{ employee.availability_start }} - {{ employee.availability_end }}</p>
+                <p>Days: {{ employee.availability_days }}</p>
+            </li>
+            {% empty %}
+            <li>No employees found.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Projects</h2>
+        <ul class="project-list">
+            {% for project in projects %}
+            <li class="project-item">
+                <h3>{{ project.name }}</h3>
+                <p>Description: {{ project.description }}</p>
+                <p>Start: {{ project.start_date }} - End: {{ project.end_date }}</p>
+                <div class="project-actions">
+                    <a href="{% url 'project_detail' project.id %}" class="btn">View Project</a>
+                    <a href="{% url 'assign_shift' project.id %}" class="btn">Assign Shift</a>
+                </div>
+            </li>
+            {% empty %}
+            <li>No projects available.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>All Shifts</h2>
+        <ul class="shift-list">
+            {% for shift in shifts %}
+            <li class="shift-item">
+                <p>{{ shift.start_time }} - {{ shift.end_time }}</p>
+                <p>Project: {{ shift.project.name }}</p>
+                <button class="btn">Report</button>
+            </li>
+            {% empty %}
+            <li>No shifts assigned yet.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    {% else %}
+
+    <h1 class="dashboard-title">Employee Dashboard</h1>
+
+    <section class="dashboard-section">
+        <h2>Your Shifts</h2>
+        <ul class="shift-list">
+            {% for shift in shifts %}
+            <li class="shift-item">
+                <p>Date: {{ shift.date }}</p>
+                <p>{{ shift.start_time }} - {{ shift.end_time }}</p>
+                <p>Project: {{ shift.project.name }}</p>
+                <div class="shift-actions">
+                    {% if shift.date == today %}
+                        {% if shift.time_entry %}
+                            {% if shift.time_entry.check_out %}
+                            <span class="status checked-out">Checked Out</span>
+                            {% else %}
+                            <form method="post" action="{% url 'check_out' shift.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn">Check Out</button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                        <form method="post" action="{% url 'check_in' shift.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">Check In</button>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                        <span class="status {% if shift.date < today %}past{% else %}future{% endif %}">
+                            {% if shift.date < today %}Past Shift{% else %}Upcoming Shift{% endif %}
+                        </span>
+                    {% endif %}
+                    
+                    {% if shift.has_reported %}
+                    <span class="status reported">Status: Reported</span>
+                    {% else %}
+                    <button class="btn" onclick="openReportModal({{ shift.id }})">Report for this shift</button>
+                    {% endif %}
+                    
+                    <a href="{% url 'request_shift_swap' shift.id %}" class="btn">Request Shift Swap</a>
+                </div>
+            </li>
+            {% empty %}
+            <li>No shifts assigned yet.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Your Availability</h2>
+        <p>{{ employee.availability }}</p>
+        <button class="btn" onclick="openAvailabilityModal()">Update Availability</button>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Request Time Off</h2>
+        <form method="post" action="{% url 'request_time_off' %}" class="time-off-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="reason">Reason for Time Off:</label>
+                <input type="text" id="reason" name="reason" required>
+            </div>
+            <div class="form-group">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" required>
+            </div>
+            <button type="submit" class="btn">Request Time Off</button>
+        </form>
+    </section>
+
+    <div id="availabilityModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAvailabilityModal()">&times;</span>
+            <h2>Update Your Availability</h2>
+            <form method="post" action="">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn">Save Availability</button>
+            </form>
+        </div>
+    </div>
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReportModal()">&times;</span>
+            <h2>Report Shift</h2>
+            <form method="post" action="{% url 'submit_shift_report' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="shiftId" name="shift_id">
+                <div class="form-group">
+                    <label for="report_document">Upload Report (Document):</label>
+                    <input type="file" id="report_document" name="report_document" accept=".pdf,.doc,.docx,.txt" required>
+                </div>
+                <button type="submit" class="btn">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .dashboard-title {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-section {
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-section h2 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+
+    .search-container {
+        margin-bottom: 20px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .status.past {
+        background-color: #6c757d;
+        color: #fff;
+    }
+    .status.future {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+
+    .employee-list, .project-list, .shift-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .employee-item, .project-item, .shift-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+
+    .project-actions, .shift-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+
+    .close-btn {
+        float: right;
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .status.checked-out {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .status.reported {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-title {
+            font-size: 2rem;
+        }
+
+        .dashboard-section {
+            padding: 15px;
+        }
+
+        .project-actions, .shift-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+    }
+</style>
+
+<script>
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function openAvailabilityModal() {
+        document.getElementById('availabilityModal').style.display = 'block';
+    }
+
+    function closeAvailabilityModal() {
+        document.getElementById('availabilityModal').style.display = 'none';
+    }
+
+    function openReportModal(shiftId) {
+        document.getElementById('reportModal').style.display = 'block';
+        document.getElementById('shiftId').value = shiftId;
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').style.display = 'none';
+    }
+
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('availabilityModal')) {
+            closeAvailabilityModal();
+        }
+        if (event.target == document.getElementById('reportModal')) {
+            closeReportModal();
+        }
+    }
+</script>
+{% endblock %}

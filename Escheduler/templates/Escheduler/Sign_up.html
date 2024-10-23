@@ -1,0 +1,170 @@
+{% extends 'Escheduler/base.html' %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <h2 class="register-title">Create Your Account</h2>
+        <form method="post" class="register-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-group">
+                <label for="username">{{ form.username.label }}</label>
+                {{ form.username }}
+                <div class="error">{{ form.username.errors }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="first_name">{{ form.first_name.label }}</label>
+                {{ form.first_name }}
+                <div class="error">{{ form.first_name.errors }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="middle_name">{{ form.middle_name.label }}</label>
+                {{ form.middle_name }}
+                <div class="error">{{ form.middle_name.errors }}</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="last_name">{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+                <div class="error">{{ form.last_name.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">{{ form.email.label }}</label>
+                {{ form.email }}
+                <div class="error">{{ form.email.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password1">{{ form.password1.label }}</label>
+                {{ form.password1 }}
+                <div class="error">{{ form.password1.errors }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password2">{{ form.password2.label }}</label>
+                {{ form.password2 }}
+                <div class="error">{{ form.password2.errors }}</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Register</button>
+        </form>
+        <div class="login-link">
+            Already have an account? <a href="{% url 'login' %}">Sign in</a>
+        </div>
+    </div>
+</div>
+<style>
+  /* General form container styling */
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+    padding: 20px;
+}
+
+.register-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.register-title {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form field styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Error message styling */
+.error {
+    color: #d9534f;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Button styling */
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+/* Login link styling */
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.login-link a:hover {
+    color: #0056b3;
+}
+
+/* Responsive behavior */
+@media (max-width: 500px) {
+    .register-card {
+        padding: 20px;
+    }
+
+    .register-title {
+        font-size: 20px;
+    }
+
+    .btn-submit {
+        font-size: 14px;
+    }
+}
+
+</style>
+{% endblock %}

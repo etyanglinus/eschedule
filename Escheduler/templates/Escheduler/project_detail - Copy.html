@@ -1,0 +1,592 @@
+{% extends 'Escheduler/base.html' %} 
+{% load custom_filters %}
+{% block content %}
+<div class="project-detail-container">
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+    <div class="message">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h1 class="project-title">Project: {{ project.name }}</h1>
+
+  <div class="project-info">
+    <p class="project-description">{{ project.description }}</p>
+    <p class="project-dates">
+      <span class="date-label">Start Date:</span> {{ project.start_date }}
+      <span class="date-label">End Date:</span> {{ project.end_date }}
+    </p>
+  </div>
+
+
+  <h2 class="section-title">Attendance Overview</h2>
+
+   <div class="attendance-overview">
+        <form method="get" action="{% url 'project_detail' project.id %}">
+            <label for="date_range">Select Date Range:</label>
+            <select name="date_range" id="date_range">
+                <option value="7" {% if date_range == '7' %}selected{% endif %}>Last 7 days</option>
+                <option value="30" {% if date_range == '30' %}selected{% endif %}>Last 30 days</option>
+                <option value="all" {% if date_range == 'all' %}selected{% endif %}>All time</option>
+            </select>
+            <button type="submit">Apply</button>
+        </form>
+
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Shift</th>
+                    <th>Employee</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Status</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in attendance_entries %}
+                <tr>
+                    <td>{{ entry.shift.date|date:"Y-m-d" }}</td>
+                    <td>{{ entry.shift.start_time|time:"H:i" }} - {{ entry.shift.end_time|time:"H:i" }}</td>
+                    <td>{{ entry.employee.user.username }}</td>
+                    <td>{{ entry.check_in|time:"H:i" }}</td>
+                    <td>{{ entry.check_out|time:"H:i"|default:"-" }}</td>
+                    <td>
+                        {% if entry.check_in and entry.check_out %}
+                            <span class="status completed">Completed</span>
+                        {% elif entry.check_in %}
+                            <span class="status in-progress">In Progress</span>
+                        {% else %}
+                            <span class="status absent">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                      {% with shift=entry.shift %}
+                          {% if shift.report_document %}
+                              <a href="{{ shift.report_document.url }}" target="_blank" class="btn btn-primary">Download Report</a>
+                          {% else %}
+                              <span>No report submitted</span>
+                          {% endif %}
+                      {% endwith %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No attendance records found for the selected period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+  <h2 class="section-title">Shifts for this Project</h2>
+
+  <div class="shifts-container">
+    {% for shift in shifts %}
+    <div class="shift-card">
+      <div class="shift-header">
+        <span class="shift-time"
+          >{{ shift.start_time }} - {{ shift.end_time }}</span>
+        <span class="shift-type">({{ shift.get_shift_type_display }})</span>
+      </div>
+
+      {% if shift.employees.all %}
+      <div class="assigned-employees">
+        <h3>Assigned to:</h3>
+        <ul class="employee-list">
+    {% for employee in shift.employees.all %}
+        <li class="employee-item">
+            {{ employee.user.username }}
+            {% with entry=time_entries|get_item:shift.id|get_item:employee.id %}
+                {% if entry %}
+                    <div class="time-entry">
+                        <span>Check-in: {{ entry.check_in|date:"g:i a" }}</span>
+                        {% if entry.check_out %}
+                            <span>Check-out: {{ entry.check_out|date:"g:i a" }}</span>
+                        {% else %}
+                            <span class="checked-in">Checked In (Not Checked Out)</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <span class="not-checked-in">Not Checked In</span>
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Report download button -->
+        {% if shift.report_document %}
+        <a href="{{ shift.report_document.url }}" class="btn btn-primary" target="_blank">Download Report</a>
+        {% else %}
+        <span class="no-report">No report submitted</span>
+        {% endif %}
+
+             <!-- Remove Employee Form -->
+        <form method="post" action="{% url 'project_detail' project.id %}" style="display: inline;">
+          {% csrf_token %}
+          <input type="hidden" name="shift_id" value="{{ shift.id }}">
+          <input type="hidden" name="employee_id" value="{{ employee.id }}">
+          <button type="submit" name="remove_employee" class="btn btn-danger">Remove</button>
+      </form>
+        </li>
+    {% endfor %}
+</ul>
+        <button
+          class="btn btn-secondary"
+          onclick="openModal('addEmployeeModal', {{ shift.id }})"
+        >
+          Add Employee
+        </button>
+      </div>
+      {% else %}
+      <div class="unassigned-shift">
+    <p>Not yet assigned</p>
+    <form method="post" action="{% url 'project_detail' project.id %}">
+    {% csrf_token %}
+    <h4>Assign Employees:</h4>
+    <select name="employees" multiple>
+        {% for employee in employees %}
+        <option value="{{ employee.id }}">
+            {{ employee.user.username }} - Available: {{ employee.availability_start }} to {{ employee.availability_end }}
+            {{ employee.availability_days }}
+        </option>
+        {% endfor %}
+          </select>
+          <input type="hidden" name="assign_employees" value="true"> 
+          <input type="hidden" name="shift_id" value="{{ shift.id }}"> 
+          <button type="submit" class="btn btn-primary">Assign</button>
+      </form>
+
+    
+</div>
+
+      {% endif %}
+
+      <div class="shift-actions">
+        <button
+          class="btn btn-secondary"
+          onclick="openModal('editShiftModal', {{ shift.id }})"
+        >
+          Edit
+        </button>
+        <form method="post" action="{% url 'project_detail' project.id %}" onsubmit="return confirm('Are you sure you want to delete this shift?');">
+          {% csrf_token %}
+          <input type="hidden" name="shift_id" value="{{ shift.id }}"> 
+          <button type="submit" name="delete_shift" value="true" class="btn btn-danger">Delete</button> 
+        </form>
+
+      </div>
+    </div>
+    {% empty %}
+    <p class="no-shifts">No shifts created for this project yet.</p>
+    {% endfor %}
+  </div>
+
+  <button class="btn btn-primary" onclick="openModal('createShiftModal')">
+    Create New Shift
+  </button>
+</div>
+
+<!-- Modals -->
+<div id="createShiftModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('createShiftModal')">&times;</span>
+    <h2>Create a New Shift</h2>
+   <form method="post" action="{% url 'project_detail' project.id %}">
+  {% csrf_token %}
+  
+  <input type="hidden" name="create_shift" value="true">  
+
+  <div class="form-group">
+    <label>Select Days:</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="shift_type" value="working_days"> Mon-Fri (Working Days)</label>
+      <label><input type="checkbox" name="shift_type" value="weekends"> Weekends</label>
+      <label><input type="checkbox" name="shift_type" value="holidays"> Holidays</label>
+    </div>
+  </div>
+  
+  <div class="form-group">
+    <label for="start_time">Start Time (HH:MM):</label>
+    <input type="time" id="start_time" name="start_time" required>
+  </div>
+  
+  <div class="form-group">
+    <label for="end_time">End Time (HH:MM):</label>
+    <input type="time" id="end_time" name="end_time" required>
+  </div>
+  
+  <button type="submit" class="btn btn-primary">Create Shift</button>
+</form>
+
+  </div>
+</div>
+
+<div id="editShiftModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('editShiftModal')">&times;</span>
+    <h2>Edit Shift</h2>
+    <form id="editShiftForm" method="post" action="{% url 'project_detail' project.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="shift_id" id="edit_shift_id" value=""> 
+      <div class="form-group">
+        <label>Select Days:</label>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" name="shift_type" value="working_days" /> Mon-Fri (Working Days)
+          </label>
+          <label>
+            <input type="checkbox" name="shift_type" value="weekends" /> Weekends
+          </label>
+          <label>
+            <input type="checkbox" name="shift_type" value="holidays" /> Holidays
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="edit_start_time">Start Time (HH:MM):</label>
+        <input type="time" id="edit_start_time" name="start_time" required />
+      </div>
+      <div class="form-group">
+        <label for="edit_end_time">End Time (HH:MM):</label>
+        <input type="time" id="edit_end_time" name="end_time" required />
+      </div>
+      <button type="submit" class="btn btn-primary" name="edit_shift" value="true">Save Changes</button>
+
+    </form>
+  </div>
+</div>
+
+
+<div id="addEmployeeModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('addEmployeeModal')">&times;</span>
+    <h2>Add Employees to Shift</h2>
+    <form id="addEmployeeForm" method="post" action="{% url 'project_detail' project.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="shift_id" id="shift_id" value="">  
+      <div class="form-group">
+        <label>Select Employees:</label>
+        <select name="employees" multiple>
+          {% for employee in employees %} 
+          <option value="{{ employee.id }}">
+            {{ employee.user.username }} - Available: {{
+            employee.availability_start }} to {{ employee.availability_end }} on
+            {{ employee.availability_days }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" name="assign_employees" class="btn btn-primary">Add Employees</button> 
+    </form>
+  </div>
+</div>
+
+
+
+<style>
+  .project-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  .project-title {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .project-info {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .project-description {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .project-dates {
+    font-size: 1rem;
+    color: #666;
+  }
+
+  .date-label {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+
+  .attendance-overview {
+        margin-bottom: 2rem;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .attendance-table th {
+        background-color: #f2f2f2;
+    }
+
+    .status {
+        padding: 3px 6px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+
+    .status.completed {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .status.in-progress {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .status.absent {
+        background-color: #dc3545;
+        color: white;
+    }
+
+  .section-title {
+    font-size: 1.8rem;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    color: #444;
+  }
+
+  .shifts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .shift-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .shift-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .shift-time {
+    font-weight: bold;
+  }
+
+  .shift-type {
+    color: #666;
+  }
+
+  .assigned-employees h3,
+  .unassigned-shift h4 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .employee-list {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .employee-item {
+    margin-bottom: 10px;
+  }
+
+  .time-entry {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .checked-in {
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .not-checked-in {
+    color: #dc3545;
+  }
+
+  .shift-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .checkbox-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  @media (max-width: 768px) {
+    .shifts-container {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+      width: 95%;
+    }
+  }
+</style>
+<script>
+  function openModal(modalId, shiftId = null) {
+    const projectId = "{{ project.id }}"; 
+    const projectDetailUrl = "{% url 'project_detail' project.id %}"; 
+
+    if (modalId === "editShiftModal") {
+      console.log(`Opening edit modal for shift ID: ${shiftId}`);
+      getShiftData(shiftId); 
+    } else if (modalId === "addEmployeeModal") {
+      
+      document.getElementById("shift_id").value = shiftId; 
+      document.getElementById(modalId).style.display = "block"; 
+    } else if (modalId === "createShiftModal") {
+      
+      document.getElementById("start_time").value = ""; 
+      document.getElementById("end_time").value = ""; 
+      document.querySelectorAll('input[name="shift_type"]').forEach((checkbox) => {
+        checkbox.checked = false; 
+      });
+
+      
+      document.getElementById(modalId).style.display = "block"; 
+    }
+  }
+
+  function getShiftData(shiftId) {
+    console.log(`Fetching data for shift ID: ${shiftId}`);
+    fetch(`/api/shifts/${shiftId}/`) 
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fetched shift data:', data);
+        document.getElementById("edit_shift_id").value = shiftId; 
+        document.getElementById("edit_start_time").value = data.start_time;
+        document.getElementById("edit_end_time").value = data.end_time;
+
+        
+        const shiftTypes = data.shift_type.split(","); 
+        document.querySelectorAll('input[name="shift_type"]').forEach((checkbox) => {
+          checkbox.checked = shiftTypes.includes(checkbox.value);
+        });
+
+        
+        document.getElementById('editShiftModal').style.display = "block"; 
+      })
+      .catch(error => {
+        console.error('Error fetching shift data:', error);
+        alert('Failed to fetch shift data. Please try again.');
+      });
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = "none"; 
+  }
+</script>
+
+
+
+
+{% endblock %}

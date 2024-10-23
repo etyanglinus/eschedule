@@ -1,0 +1,87 @@
+{% extends 'Escheduler/base.html' %} {% block content %}
+<div class="timesheet-container">
+  <h2 class="timesheet-heading">Your Timesheet</h2>
+  <table class="timesheet-table">
+    <thead>
+      <tr>
+        <th>Shift</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Duration (Hours)</th>
+        <th>Payment ($)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in time_entries %}
+      <tr>
+        <td>{{ entry.shift }}</td>
+        <td>{{ entry.check_in }}</td>
+        <td>{{ entry.check_out }}</td>
+        <td>{{ entry.duration }}</td>
+        <td>{{ entry.calculate_payment }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="no-entries">No time entries available.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 class="total-payment">Total Payment: ${{ total_payment }}</h3>
+</div>
+<style>
+  .timesheet-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .timesheet-heading {
+    text-align: center;
+    color: #343a40;
+    margin-bottom: 20px;
+    font-size: 26px;
+  }
+
+  .timesheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+
+  .timesheet-table th,
+  .timesheet-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+  }
+
+  .timesheet-table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+  }
+
+  .timesheet-table td {
+    background-color: #ffffff;
+    color: #333;
+  }
+
+  .no-entries {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+  }
+
+  .total-payment {
+    text-align: right;
+    color: #28a745;
+    font-size: 22px;
+    margin-top: 10px;
+  }
+</style>
+{% endblock %}

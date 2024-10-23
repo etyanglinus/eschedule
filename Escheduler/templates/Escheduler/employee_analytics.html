@@ -1,0 +1,220 @@
+{% extends 'Escheduler/base.html' %} {% block content %}
+<div class="analytics-container">
+  <h1 class="analytics-title">Employee Analytics</h1>
+
+  <div class="filter-section">
+    <form id="filterForm" class="filter-form">
+      <div class="form-group">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" required />
+      </div>
+      <div class="form-group">
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+  </div>
+
+  <div class="analytics-results">
+    <table id="analyticsTable" class="analytics-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Total Hours Worked</th>
+          <th>Overtime Hours</th>
+          <th>Total Payment ($)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in analytics_data %}
+        <tr>
+          <td>{{ data.employee.user.username }}</td>
+          <td>{{ data.total_hours_worked|floatformat:2 }}</td>
+          <td>{{ data.total_overtime_hours|floatformat:2 }}</td>
+          <td>{{ data.total_payment|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No data available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="export-section">
+    <button id="exportBtn" class="btn btn-secondary">Export as CSV</button>
+  </div>
+</div>
+
+<style>
+  .analytics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  .analytics-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .filter-section {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+  }
+
+  .form-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  .btn-secondary:hover {
+    background-color: #545b62;
+  }
+
+  .analytics-results {
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+
+  .analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .analytics-table th,
+  .analytics-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .analytics-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .analytics-table tr:hover {
+    background-color: #f5f5f5;
+  }
+
+  .export-section {
+    text-align: right;
+  }
+
+  @media (max-width: 768px) {
+    .filter-form {
+      flex-direction: column;
+    }
+
+    .form-group {
+      width: 100%;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .analytics-table {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const filterForm = document.getElementById("filterForm");
+    const exportBtn = document.getElementById("exportBtn");
+
+    filterForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      
+      
+      const startDate = document.getElementById("start_date").value;
+      const endDate = document.getElementById("end_date").value;
+      console.log("Filtering data from", startDate, "to", endDate);
+      
+    });
+
+    exportBtn.addEventListener("click", function () {
+      // Function to export table data as CSV
+      exportTableToCSV("employee_analytics.csv");
+    });
+
+    function exportTableToCSV(filename) {
+      const table = document.getElementById("analyticsTable");
+      let csv = [];
+      for (let i = 0; i < table.rows.length; i++) {
+        let row = [],
+          cols = table.rows[i].cells;
+        for (let j = 0; j <script cols.length; j++) row.push(cols[j].innerText);
+        csv.push(row.join(","));
+      }
+      downloadCSV(csv.join("\n"), filename);
+    }
+
+    function downloadCSV(csv, filename) {
+      let csvFile = new Blob([csv], { type: "text/csv" });
+      let downloadLink = document.createElement("a");
+      downloadLink.download = filename;
+      downloadLink.href = window.URL.createObjectURL(csvFile);
+      downloadLink.style.display = "none";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+    }
+  });
+</script>
+{% endblock %}

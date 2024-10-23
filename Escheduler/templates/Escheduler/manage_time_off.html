@@ -1,0 +1,122 @@
+{% extends 'Escheduler/base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Time Off Requests</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        .table-container {
+            margin: 50px auto;
+            width: 90%;
+            max-width: 1200px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+        .table {
+            margin-top: 20px;
+            background-color: #f8f9fa;
+        }
+        textarea {
+            width: 100%;
+            resize: vertical;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .btn {
+            margin-right: 10px;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        .btn-approve {
+            background-color: #28a745; /* Green */
+            border-color: #28a745;
+        }
+        .btn-approve:hover {
+            background-color: #218838; /* Darker green */
+            border-color: #1e7e34;
+        }
+        .btn-deny {
+            background-color: #dc3545; /* Red */
+            border-color: #dc3545;
+        }
+        .btn-deny:hover {
+            background-color: #c82333; /* Darker red */
+            border-color: #bd2130;
+        }
+        .form-inline {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-inline button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container table-container">
+    <h1 class="text-center">Manage Time Off Requests</h1>
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Employee</th>
+                <th>Reason</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Projects and Shifts</th>
+                <th>Manager Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in requests %}
+            <tr>
+                <td>{{ request.employee.user.username }}</td>
+                <td>{{ request.reason }}</td>
+                <td>{{ request.start_date }}</td>
+                <td>{{ request.end_date }}</td>
+                <td>
+                    {% if request.status == 'approved' %}
+                        <span class="badge badge-success">{{ request.status }}</span>
+                    {% elif request.status == 'denied' %}
+                        <span class="badge badge-danger">{{ request.status }}</span>
+                    {% else %}
+                        <span class="badge badge-warning">{{ request.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% for shift in request.project_shifts %}
+                        <strong>{{ shift.project_name }}</strong> ({{ shift.shift_time }})<br>
+                    {% endfor %}
+                </td>
+                <td>
+                    <form method="POST" class="form-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        <textarea name="manager_response" rows="2" placeholder="Manager's response">{{ request.manager_response }}</textarea>
+                        <div class="mt-2">
+                            <button type="submit" name="action" value="approve" class="btn btn-approve btn-sm">Approve</button>
+                            <button type="submit" name="action" value="deny" class="btn btn-deny btn-sm">Deny</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
+{% endblock %}

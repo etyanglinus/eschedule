@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Swap Decision</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333333;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #555555;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .shift-details {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .shift-details p {
+            margin: 0;
+            color: #333333;
+        }
+        .manager-response {
+            background-color: #f9f9f9;
+            border-left: 4px solid #007bff;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Shift Swap Request Decision</h1>
+        
+        <p>Hello {{ employee }},</p>
+
+        <p>Your shift swap request for the shift on:</p>
+        <div class="shift-details">
+            <p><strong>{{ shift.start_time|date:"F j, Y, g:i a" }}</strong> to <strong>{{ shift.end_time|date:"F j, Y, g:i a" }}</strong></p>
+        </div>
+
+        <p>has been <strong>{{ decision }}</strong>.</p>
+
+        <div class="manager-response">
+            <p><strong>Manager's response:</strong></p>
+            <p>{{ manager_response }}</p>
+        </div>
+
+        <p>This decision was made on <strong>{{ response_date|date:"F j, Y, g:i a" }}</strong>.</p>
+
+        <p>
+            {% if decision == 'approved' %}
+            If your request was approved, please check your updated shift schedule.
+            {% else %}
+            If denied, feel free to reach out for further clarification.
+            {% endif %}
+        </p>
+
+        <div class="footer">
+            <p>Best regards,<br>Your Scheduling System</p>
+        </div>
+    </div>
+</body>
+</html>

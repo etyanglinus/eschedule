@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Shift Swap Request</title>
+    <style>
+        /* Add some styling like the one in the previous template */
+    </style>
+</head>
+<body>
+    <h2>Hello {{ manager.first_name }},</h2>
+    <p>A new shift swap request has been submitted by <strong>{{ employee.user.first_name }} {{ employee.user.last_name }}</strong>.</p>
+    <p>employee email:<strong>{{employee.user.email}}</strong></p>
+    <p>Request Details:</p>
+    <ul>
+        <li>Original Shift: {{ swap_request.original_shift }}</li>
+        <li>Requested Shift: {{ swap_request.requested_shift }}</li>
+        <li>Reason: {{ swap_request.reason }}</li>
+    </ul>
+    <p>Please log in to the management time off dashboard to review and process the request.</p>
+    <p>Thank you,</p>
+    <p>Your Team</p>
+</body>
+</html>
